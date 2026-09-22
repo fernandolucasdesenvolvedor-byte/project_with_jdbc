@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import db.DB;
@@ -70,6 +71,37 @@ public class SellerDAOJDBC implements SellerDAO{
 	public List<Seller> findAll() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public List<Seller> findByDepartment(Department department) {
+
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		
+		try {
+			ps = conn.prepareStatement("SELECT seller.*, department.Name AS DepName FROM seller INNER JOIN department ON seller.DepartmentId = department.Id WHERE department.Id = ? ORDER BY seller.Name",ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
+			ps.setInt(1, department.getId());
+			rs = ps.executeQuery();
+			List<Seller> sellers = new ArrayList<>();
+			rs.next();
+			Department dept = new Department(rs.getInt("DepartmentId"), rs.getString("DepName"));
+			rs.beforeFirst();
+			
+			while(rs.next()) {
+				LocalDate date = LocalDate.parse(rs.getDate("BirthDate").toString());
+				Seller seller = new Seller(rs.getInt("Id"),rs.getString("Name"),rs.getString("Email"),date,rs.getDouble("BaseSalary"),dept);
+				sellers.add(seller);
+			}
+			
+			return sellers;
+			
+		}catch(SQLException e) {
+			throw new DbException(e.getMessage());
+		}finally {
+			DB.closeStatement(ps);
+			DB.closeResultSet(rs);
+		}
 	}
 
 }
