@@ -4,9 +4,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import db.DB;
 import db.DbException;
@@ -69,8 +72,39 @@ public class SellerDAOJDBC implements SellerDAO{
 
 	@Override
 	public List<Seller> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+
+		Statement st = null;
+		ResultSet rs = null;
+		
+		try {
+			List<Seller> sellers = new ArrayList<>();
+			st = conn.createStatement();
+			rs = st.executeQuery("SELECT seller.*, department.Name AS DepName FROM seller INNER JOIN department ON seller.DepartmentId = department.id ORDER BY seller.Name");
+			Map<Integer,Department> departments = new HashMap<>();
+			
+			while(rs.next()) {
+				Department dept = departments.get(rs.getInt("Id"));
+				
+				if(dept == null) {
+					dept = new Department(rs.getInt("DepartmentId"),rs.getString("DepName"));
+					departments.put(rs.getInt("Id"), dept);
+				}
+				
+				LocalDate date = LocalDate.parse(rs.getDate("BirthDate").toString());
+				
+				Seller seller = new Seller(rs.getInt("Id"),rs.getString("Name"),rs.getString("Email"),date,rs.getDouble("BaseSalary"),dept);
+				
+				sellers.add(seller);
+			}
+			
+			return sellers;
+			
+		}catch(SQLException e) {
+			throw new DbException(e.getMessage());
+		}finally {
+			DB.closeStatement(st);
+			DB.closeResultSet(rs);
+		}
 	}
 
 	@Override
