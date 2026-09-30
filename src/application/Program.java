@@ -13,7 +13,9 @@ public class Program {
 		
 		DepartmentDAO jdbcDepartment = (DepartmentDAOJDBC) DAOFactory.createDepartmentDAO();
 		
-		jdbcDepartment.deleteById(5);
+		
+		//jdbcDepartment.insert(new Department(null,"Games"));
+		jdbcDepartment.update(new Department(6,"Video-Games"));
 		
 		
 		
