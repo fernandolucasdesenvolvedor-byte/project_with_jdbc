@@ -3,19 +3,22 @@ package application;
 import java.util.List;
 
 import model.dao.DAOFactory;
-import model.dao.impl.SellerDAOJDBC;
-import model.entities.Seller;
+import model.dao.DepartmentDAO;
+import model.dao.impl.DepartmentDAOJDBC;
+import model.entities.Department;
 
 public class Program {
 
 	public static void main(String[] args) {
 		
-		SellerDAOJDBC jdbcSeller = (SellerDAOJDBC) DAOFactory.createSellerDAO();
-		jdbcSeller.deleteById(9);;
+		DepartmentDAO jdbcDepartment = (DepartmentDAOJDBC) DAOFactory.createDepartmentDAO();
+		
+		jdbcDepartment.deleteById(5);
 		
 		
-		List<Seller> sellers = jdbcSeller.findAll();
-		sellers.forEach(System.out::println);
+		
+		List<Department> departments = jdbcDepartment.findAll();
+		departments.forEach(System.out::println);
 
 	}
 

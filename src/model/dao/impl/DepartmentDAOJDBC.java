@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 import db.DB;
@@ -21,7 +23,32 @@ public class DepartmentDAOJDBC implements DepartmentDAO{
 
 	@Override
 	public void insert(Department department) {
-		// TODO Auto-generated method stub
+
+		PreparedStatement ps = null;
+		
+		try {
+			
+			ps = conn.prepareStatement("INSERT INTO department (Name) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+			
+			ps.setString(1,department.getName());
+			
+			int rowsAffected = ps.executeUpdate();
+			
+			if(rowsAffected > 0) {
+				ResultSet rs = ps.getGeneratedKeys();
+				if(rs.next()) {
+					department.setId(rs.getInt(1));
+				}
+				DB.closeResultSet(rs);
+			}else {
+				throw new DbException("Unexpected Error! No rows affected!");
+			}
+			
+		}catch(SQLException e) {
+			
+		}finally {
+			DB.closeStatement(ps);
+		}
 		
 	}
 
@@ -33,7 +60,22 @@ public class DepartmentDAOJDBC implements DepartmentDAO{
 
 	@Override
 	public void deleteById(Integer id) {
-		// TODO Auto-generated method stub
+
+		PreparedStatement ps = null;
+		
+		try {
+			
+			ps = conn.prepareStatement("DELETE FROM department WHERE Id = ?");
+			
+			ps.setInt(1, id);
+			
+			ps.executeUpdate();
+			
+		}catch(SQLException e) {
+			throw new DbException(e.getMessage());
+		}finally {
+			DB.closeStatement(ps);
+		}
 		
 	}
 
@@ -65,8 +107,29 @@ public class DepartmentDAOJDBC implements DepartmentDAO{
 
 	@Override
 	public List<Department> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+		
+		Statement st = null;
+		ResultSet rs = null;
+		
+		try {
+			
+			st = conn.createStatement();
+			rs = st.executeQuery("SELECT * FROM department");
+			List<Department> departments = new ArrayList<>();
+			
+			while(rs.next()) {
+				Department department = new Department(rs.getInt("Id"),rs.getString("Name"));
+				departments.add(department);
+			}
+			
+			return departments;
+			
+		}catch(SQLException e) {
+			throw new DbException(e.getMessage());
+		}finally {
+			DB.closeStatement(st);
+			DB.closeResultSet(rs);
+		}
 	}
 
 }
